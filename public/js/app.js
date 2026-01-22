@@ -768,40 +768,76 @@ document.addEventListener('keydown', (e) => {
         closeModal(elements.taskModal);
         closeModal(elements.projectModal);
         closeModal(elements.listModal);
-        closeSidebar();
+        if (window.closeSidebar) window.closeSidebar();
     }
 });
 
 // ========================================
 // Mobile Sidebar Toggle
 // ========================================
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
-const sidebar = document.getElementById('sidebar');
+function setupMobileSidebar() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.getElementById('sidebar');
 
-function openSidebar() {
-    sidebar.classList.add('open');
-    sidebarOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
+    if (!mobileMenuBtn || !sidebar) return;
 
-function closeSidebar() {
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-mobileMenuBtn.addEventListener('click', openSidebar);
-sidebarCloseBtn.addEventListener('click', closeSidebar);
-sidebarOverlay.addEventListener('click', closeSidebar);
-
-// Close sidebar when selecting a project on mobile
-elements.projectList.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768) {
-        closeSidebar();
+    function openSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
     }
-});
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+    }
+
+    // Add both click and touchstart for iOS
+    mobileMenuBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openSidebar();
+    });
+    
+    mobileMenuBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        openSidebar();
+    }, { passive: false });
+
+    if (sidebarCloseBtn) {
+        sidebarCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSidebar();
+        });
+        
+        sidebarCloseBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            closeSidebar();
+        }, { passive: false });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('touchstart', closeSidebar, { passive: true });
+    }
+
+    // Close sidebar when selecting a project on mobile
+    elements.projectList.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+            setTimeout(closeSidebar, 200);
+        }
+    });
+    
+    // Store close function for escape key
+    window.closeSidebar = closeSidebar;
+}
 
 // ========================================
 // Utility Functions
@@ -817,4 +853,5 @@ function escapeHtml(text) {
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     loadProjects();
+    setupMobileSidebar();
 });
