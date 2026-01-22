@@ -4,12 +4,12 @@ A modern Kanban-style project and task management web application.
 
 ## Features
 
-- **Multiple Projects** - Create and manage multiple projects
-- **Kanban Lists** - Organize tasks in customizable columns
-- **Task Cards** - Create, edit, and delete tasks with descriptions
-- **Drag & Drop** - Intuitive drag-and-drop task management
-- **Modern UI** - Beautiful dark theme with glassmorphism effects
-- **Persistent Storage** - SQLite database for data persistence
+- 📋 **Multiple Projects** - Create and manage multiple projects
+- 📝 **Kanban Lists** - Organize tasks in customizable columns
+- ✅ **Task Cards** - Create, edit, and delete tasks with descriptions
+- 🔄 **Drag & Drop** - Intuitive drag-and-drop task management
+- 🎨 **Modern UI** - Beautiful dark theme with glassmorphism effects
+- 💾 **Persistent Storage** - SQLite database for data persistence
 
 ## Quick Start
 

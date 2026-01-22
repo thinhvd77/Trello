@@ -19,20 +19,15 @@ const API = {
     baseUrl: '/api',
 
     async request(endpoint, options = {}) {
-        showLoading();
-        try {
-            const response = await fetch(`${this.baseUrl}${endpoint}`, {
-                headers: { 'Content-Type': 'application/json' },
-                ...options
-            });
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'API request failed');
-            }
-            return response.json();
-        } finally {
-            hideLoading();
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'API request failed');
         }
+        return response.json();
     },
 
     // Projects
@@ -66,7 +61,6 @@ const elements = {
     addListContainer: document.getElementById('addListContainer'),
     editProjectBtn: document.getElementById('editProjectBtn'),
     deleteProjectBtn: document.getElementById('deleteProjectBtn'),
-    loadingOverlay: document.getElementById('loadingOverlay'),
 
     // Modals
     taskModal: document.getElementById('taskModal'),
@@ -92,18 +86,6 @@ const elements = {
 // ========================================
 // Render Functions
 // ========================================
-function showLoading() {
-    if (elements.loadingOverlay) {
-        elements.loadingOverlay.classList.add('active');
-    }
-}
-
-function hideLoading() {
-    if (elements.loadingOverlay) {
-        elements.loadingOverlay.classList.remove('active');
-    }
-}
-
 function renderProjects() {
     elements.projectList.innerHTML = state.projects.map(project => `
         <li class="project-item ${state.currentProject?.id === project.id ? 'active' : ''}" 
@@ -135,19 +117,57 @@ function renderBoard() {
     renderLists();
 }
 
+// Helper function to get list icon based on name
+function getListIcon(listName) {
+    const name = listName.toLowerCase().trim();
+    
+    // To Do / Backlog icons
+    if (name.includes('to do') || name.includes('todo') || name.includes('backlog')) {
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="list-icon list-icon-todo">
+            <circle cx="12" cy="12" r="10"/>
+        </svg>`;
+    }
+    
+    // In Progress icons
+    if (name.includes('progress') || name.includes('doing') || name.includes('working')) {
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="list-icon list-icon-progress">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+        </svg>`;
+    }
+    
+    // Done / Complete icons
+    if (name.includes('done') || name.includes('complete') || name.includes('finished')) {
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="list-icon list-icon-done">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9 12l2 2 4-4"/>
+        </svg>`;
+    }
+    
+    // Default list icon
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="list-icon">
+        <line x1="8" y1="6" x2="21" y2="6"/>
+        <line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/>
+        <line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+    </svg>`;
+}
+
 function renderLists() {
     elements.listsContainer.innerHTML = state.lists.map(list => `
         <div class="list" data-list-id="${list.id}">
             <div class="list-header">
-                <h3 class="list-title">${escapeHtml(list.name)}</h3>
+                <h3 class="list-title">${getListIcon(list.name)}${escapeHtml(list.name)}</h3>
                 <div class="list-actions">
-                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List" aria-label="Edit list ${escapeHtml(list.name)}">
+                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </button>
-                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List" aria-label="Delete list ${escapeHtml(list.name)}">
+                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -159,7 +179,7 @@ function renderLists() {
                 ${renderTasks(list.id)}
             </div>
             <div class="list-footer">
-                <button class="add-task-btn" data-list-id="${list.id}" aria-label="Add a card to ${escapeHtml(list.name)}">
+                <button class="add-task-btn" data-list-id="${list.id}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
@@ -174,25 +194,72 @@ function renderLists() {
     setupDragAndDrop();
 }
 
+// Helper function to get task icon based on list name
+function getTaskIcon(listId) {
+    const list = state.lists.find(l => l.id === listId);
+    if (!list) return getDefaultTaskIcon();
+    
+    const name = list.name.toLowerCase().trim();
+    
+    // To Do / Backlog icons - checkbox unchecked
+    if (name.includes('to do') || name.includes('todo') || name.includes('backlog')) {
+        return `<span class="task-icon task-icon-todo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+            </svg>
+        </span>`;
+    }
+    
+    // In Progress icons - loading/spinner style
+    if (name.includes('progress') || name.includes('doing') || name.includes('working')) {
+        return `<span class="task-icon task-icon-progress">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <path d="M12 8v4l2 2"/>
+            </svg>
+        </span>`;
+    }
+    
+    // Done / Complete icons - checkbox checked
+    if (name.includes('done') || name.includes('complete') || name.includes('finished')) {
+        return `<span class="task-icon task-icon-done">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <path d="M9 12l2 2 4-4"/>
+            </svg>
+        </span>`;
+    }
+    
+    return getDefaultTaskIcon();
+}
+
+function getDefaultTaskIcon() {
+    return `<span class="task-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+        </svg>
+    </span>`;
+}
+
 function renderTasks(listId) {
     const tasks = state.tasks[listId] || [];
     return tasks.map(task => `
-        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}" tabindex="0">
+        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}">
             <div class="task-card-actions">
-                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit" aria-label="Edit task ${escapeHtml(task.title)}">
+                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                 </button>
-                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete" aria-label="Delete task ${escapeHtml(task.title)}">
+                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                     </svg>
                 </button>
             </div>
-            <div class="task-card-title">${escapeHtml(task.title)}</div>
+            <div class="task-card-title">${getTaskIcon(listId)}${escapeHtml(task.title)}</div>
             ${task.description ? `<div class="task-card-desc">${escapeHtml(task.description)}</div>` : ''}
         </div>
     `).join('');
@@ -228,6 +295,9 @@ function handleDragStart(e) {
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
+    // Remove any transient inline styles to avoid flicker artifacts
+    e.target.style.opacity = '';
+    e.target.style.transform = '';
     document.querySelectorAll('.list').forEach(list => {
         list.classList.remove('dragging-over');
     });
@@ -242,14 +312,83 @@ function handleDragOver(e) {
     const list = listContent.closest('.list');
     list.classList.add('dragging-over');
 
+    if (!draggedTask) return;
+
+    const newListId = parseInt(listContent.dataset.listId);
+    const currentListId = parseInt(draggedTask.dataset.listId);
+    
+    // Update task icon immediately when entering a new list
+    if (newListId !== currentListId) {
+        updateTaskIconForList(draggedTask, newListId);
+        draggedTask.dataset.listId = newListId;
+    }
+
     const afterElement = getDragAfterElement(listContent, e.clientY);
 
-    if (draggedTask) {
-        if (afterElement == null) {
+    // Only move DOM if position actually changes to prevent flicker
+    if (afterElement == null) {
+        // Append only if not already last child
+        if (draggedTask.parentNode !== listContent || draggedTask.nextSibling !== null) {
             listContent.appendChild(draggedTask);
-        } else {
+        }
+    } else {
+        // Insert only if not already in correct position
+        if (draggedTask.nextSibling !== afterElement) {
             listContent.insertBefore(draggedTask, afterElement);
         }
+    }
+}
+
+// Helper function to update task icon based on list
+function updateTaskIconForList(taskCard, listId) {
+    const titleElement = taskCard.querySelector('.task-card-title');
+    if (!titleElement) return;
+    
+    const existingIcon = titleElement.querySelector('.task-icon');
+    const list = state.lists.find(l => l.id === listId);
+    if (!list) return;
+    
+    const name = list.name.toLowerCase().trim();
+    let newIconHtml = '';
+    
+    // To Do / Backlog icons
+    if (name.includes('to do') || name.includes('todo') || name.includes('backlog')) {
+        newIconHtml = `<span class="task-icon task-icon-todo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+            </svg>
+        </span>`;
+    }
+    // In Progress icons
+    else if (name.includes('progress') || name.includes('doing') || name.includes('working')) {
+        newIconHtml = `<span class="task-icon task-icon-progress">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <path d="M12 8v4l2 2"/>
+            </svg>
+        </span>`;
+    }
+    // Done / Complete icons
+    else if (name.includes('done') || name.includes('complete') || name.includes('finished')) {
+        newIconHtml = `<span class="task-icon task-icon-done">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <path d="M9 12l2 2 4-4"/>
+            </svg>
+        </span>`;
+    }
+    // Default icon
+    else {
+        newIconHtml = `<span class="task-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+            </svg>
+        </span>`;
+    }
+    
+    // Replace the existing icon
+    if (existingIcon) {
+        existingIcon.outerHTML = newIconHtml;
     }
 }
 
