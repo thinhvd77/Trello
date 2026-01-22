@@ -768,6 +768,38 @@ document.addEventListener('keydown', (e) => {
         closeModal(elements.taskModal);
         closeModal(elements.projectModal);
         closeModal(elements.listModal);
+        closeSidebar();
+    }
+});
+
+// ========================================
+// Mobile Sidebar Toggle
+// ========================================
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebar = document.getElementById('sidebar');
+
+function openSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+mobileMenuBtn.addEventListener('click', openSidebar);
+sidebarCloseBtn.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Close sidebar when selecting a project on mobile
+elements.projectList.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+        closeSidebar();
     }
 });
 
