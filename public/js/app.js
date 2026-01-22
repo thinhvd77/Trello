@@ -19,15 +19,20 @@ const API = {
     baseUrl: '/api',
 
     async request(endpoint, options = {}) {
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
-            headers: { 'Content-Type': 'application/json' },
-            ...options
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'API request failed');
+        showLoading();
+        try {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'API request failed');
+            }
+            return response.json();
+        } finally {
+            hideLoading();
         }
-        return response.json();
     },
 
     // Projects
@@ -61,6 +66,7 @@ const elements = {
     addListContainer: document.getElementById('addListContainer'),
     editProjectBtn: document.getElementById('editProjectBtn'),
     deleteProjectBtn: document.getElementById('deleteProjectBtn'),
+    loadingOverlay: document.getElementById('loadingOverlay'),
 
     // Modals
     taskModal: document.getElementById('taskModal'),
@@ -86,6 +92,18 @@ const elements = {
 // ========================================
 // Render Functions
 // ========================================
+function showLoading() {
+    if (elements.loadingOverlay) {
+        elements.loadingOverlay.classList.add('active');
+    }
+}
+
+function hideLoading() {
+    if (elements.loadingOverlay) {
+        elements.loadingOverlay.classList.remove('active');
+    }
+}
+
 function renderProjects() {
     elements.projectList.innerHTML = state.projects.map(project => `
         <li class="project-item ${state.currentProject?.id === project.id ? 'active' : ''}" 
@@ -123,13 +141,13 @@ function renderLists() {
             <div class="list-header">
                 <h3 class="list-title">${escapeHtml(list.name)}</h3>
                 <div class="list-actions">
-                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List">
+                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List" aria-label="Edit list ${escapeHtml(list.name)}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </button>
-                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List">
+                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List" aria-label="Delete list ${escapeHtml(list.name)}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -141,7 +159,7 @@ function renderLists() {
                 ${renderTasks(list.id)}
             </div>
             <div class="list-footer">
-                <button class="add-task-btn" data-list-id="${list.id}">
+                <button class="add-task-btn" data-list-id="${list.id}" aria-label="Add a card to ${escapeHtml(list.name)}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
@@ -159,15 +177,15 @@ function renderLists() {
 function renderTasks(listId) {
     const tasks = state.tasks[listId] || [];
     return tasks.map(task => `
-        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}">
+        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}" tabindex="0">
             <div class="task-card-actions">
-                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit">
+                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit" aria-label="Edit task ${escapeHtml(task.title)}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                 </button>
-                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete">
+                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete" aria-label="Delete task ${escapeHtml(task.title)}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
