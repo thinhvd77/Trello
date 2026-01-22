@@ -829,14 +829,18 @@ function setupMobileSidebar() {
     }
 
     // Close sidebar when selecting a project on mobile
-    elements.projectList.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768) {
-            setTimeout(closeSidebar, 200);
-        }
-    });
+    if (elements.projectList) {
+        elements.projectList.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                setTimeout(closeSidebar, 200);
+            }
+        });
+    }
     
     // Store close function for escape key
     window.closeSidebar = closeSidebar;
+    
+    console.log('Mobile sidebar setup complete');
 }
 
 // ========================================
