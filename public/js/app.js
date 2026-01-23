@@ -157,18 +157,18 @@ function getListIcon(listName) {
 
 function renderLists() {
     elements.listsContainer.innerHTML = state.lists.map(list => `
-        <div class="list" data-list-id="${list.id}">
+        <div class="list" data-list-id="${list.id}" role="region" aria-label="${escapeHtml(list.name)} list">
             <div class="list-header">
                 <h3 class="list-title">${getListIcon(list.name)}${escapeHtml(list.name)}</h3>
                 <div class="list-actions">
-                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="btn-icon btn-icon-sm edit-list-btn" data-id="${list.id}" title="Edit List" aria-label="Edit list: ${escapeHtml(list.name)}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </button>
-                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="btn-icon btn-icon-sm delete-list-btn" data-id="${list.id}" title="Delete List" aria-label="Delete list: ${escapeHtml(list.name)}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                         </svg>
@@ -179,8 +179,8 @@ function renderLists() {
                 ${renderTasks(list.id)}
             </div>
             <div class="list-footer">
-                <button class="add-task-btn" data-list-id="${list.id}">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="add-task-btn" data-list-id="${list.id}" aria-label="Add card to ${escapeHtml(list.name)}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
@@ -244,16 +244,16 @@ function getDefaultTaskIcon() {
 function renderTasks(listId) {
     const tasks = state.tasks[listId] || [];
     return tasks.map(task => `
-        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}">
+        <div class="task-card" draggable="true" data-task-id="${task.id}" data-list-id="${listId}" role="article" aria-label="${escapeHtml(task.title)}">
             <div class="task-card-actions">
-                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="btn-icon btn-icon-sm edit-task-btn" data-id="${task.id}" title="Edit" aria-label="Edit task: ${escapeHtml(task.title)}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                 </button>
-                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="btn-icon btn-icon-sm delete-task-btn" data-id="${task.id}" title="Delete" aria-label="Delete task: ${escapeHtml(task.title)}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                     </svg>
@@ -794,18 +794,25 @@ function setupMobileSidebar() {
         console.log('openSidebar called');
         sidebar.classList.add('open');
         if (sidebarOverlay) sidebarOverlay.classList.add('active');
+        mobileMenuBtn.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.width = '100%';
+        // Focus first focusable element in sidebar
+        const firstFocusable = sidebar.querySelector('button, [href], input, select, textarea');
+        if (firstFocusable) firstFocusable.focus();
     }
 
     function closeSidebar() {
         console.log('closeSidebar called');
         sidebar.classList.remove('open');
         if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
+        // Return focus to menu button
+        mobileMenuBtn.focus();
     }
 
     // Use touchend instead of touchstart to avoid conflicts
