@@ -12,6 +12,9 @@ const state = {
     selectedColor: '#6366f1'
 };
 
+// Export state globally for other modules
+window.state = state;
+
 // ========================================
 // API Functions
 // ========================================
@@ -49,6 +52,9 @@ const API = {
     deleteTask: (id) => API.request(`/tasks/${id}`, { method: 'DELETE' }),
     reorderTasks: (tasks) => API.request('/tasks/reorder', { method: 'POST', body: JSON.stringify({ tasks }) })
 };
+
+// Export API globally for other modules
+window.API = API;
 
 // ========================================
 // DOM Elements
@@ -192,6 +198,11 @@ function renderLists() {
 
     // Setup drag and drop after rendering
     setupDragAndDrop();
+
+    // Setup mobile card move buttons
+    if (typeof MobileCardMove !== 'undefined') {
+        MobileCardMove.init();
+    }
 }
 
 // Helper function to get task icon based on list name
