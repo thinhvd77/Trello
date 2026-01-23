@@ -781,51 +781,64 @@ function setupMobileSidebar() {
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebar = document.getElementById('sidebar');
 
-    if (!mobileMenuBtn || !sidebar) return;
+    console.log('setupMobileSidebar called');
+    console.log('mobileMenuBtn:', mobileMenuBtn);
+    console.log('sidebar:', sidebar);
+
+    if (!mobileMenuBtn || !sidebar) {
+        console.log('Mobile menu elements not found, exiting');
+        return;
+    }
 
     function openSidebar() {
+        console.log('openSidebar called');
         sidebar.classList.add('open');
-        sidebarOverlay.classList.add('active');
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.width = '100%';
     }
 
     function closeSidebar() {
+        console.log('closeSidebar called');
         sidebar.classList.remove('open');
-        sidebarOverlay.classList.remove('active');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
     }
 
-    // Add both click and touchstart for iOS
+    // Use touchend instead of touchstart to avoid conflicts
+    mobileMenuBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('mobileMenuBtn touchend');
+        openSidebar();
+    }, { passive: false });
+    
     mobileMenuBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        console.log('mobileMenuBtn click');
         openSidebar();
     });
-    
-    mobileMenuBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        openSidebar();
-    }, { passive: false });
 
     if (sidebarCloseBtn) {
+        sidebarCloseBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        }, { passive: false });
+        
         sidebarCloseBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeSidebar();
         });
-        
-        sidebarCloseBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            closeSidebar();
-        }, { passive: false });
     }
 
     if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('touchend', closeSidebar, { passive: true });
         sidebarOverlay.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('touchstart', closeSidebar, { passive: true });
     }
 
     // Close sidebar when selecting a project on mobile

@@ -790,10 +790,21 @@ body {
 /* Mobile menu button - hidden on desktop */
 .mobile-menu-btn {
     display: none;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    z-index: 10;
 }
 
 .sidebar-close-btn {
     display: none;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
 }
 
 .sidebar-overlay {
@@ -876,8 +887,18 @@ body {
     
     /* Mobile menu button */
     .mobile-menu-btn {
-        display: flex;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
         margin-right: 8px;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .sidebar-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
     
     /* Board header */
